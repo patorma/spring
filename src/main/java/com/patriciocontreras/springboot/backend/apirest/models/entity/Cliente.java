@@ -17,10 +17,12 @@ import javax.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@NonNull
 @Entity
 @Table(name = "clientes" )
 public class Cliente implements Serializable {
