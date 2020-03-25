@@ -1,13 +1,18 @@
 package com.patriciocontreras.springboot.backend.apirest.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,12 +63,31 @@ public class ClienteRestController {
 
 	}
 
+	// antes de ejecutar en todo su esplendor el metodo create se deben validar los datos
+	// osea intercepta el objeto cliente y valida cada valor , cada atributo desde el request body
+	// se agrega @Valid y despues se inyecta al metodo create el objeto que tiene todos los mensajes de error
+	// donde podemos saber si tenemos algun problema que en este caso es el objeto result
 	@PostMapping("/clientes")
-	public ResponseEntity<?> create(@RequestBody Cliente cliente) {
+	public ResponseEntity<?> create(@Valid @RequestBody Cliente cliente,BindingResult result) {
 		
 		//Es el nuevo cliente creado	
 		Cliente clienteNew = null;
 		Map<String, Object> response = new HashMap<>();
+		
+		// se valida si contiene errores el objeto 
+		if(result.hasErrors()) {
+			// se debe obtener los mensajes de errror de cada campo 
+			// y convertir estos en una lista de errores de tipo string
+			List<String> errors = new ArrayList<>();
+			
+			// la idea es iterar con un for a traves de esta coleccion de mesnajes (o lista)
+			for(FieldError err: result.getFieldErrors()) {
+				errors.add("El campo '"+ err.getField() + "' "+err.getDefaultMessage());
+			}
+			response.put("errors", errors);
+			// se responde con un responseentity con listados de error
+			return new ResponseEntity<Map<String, Object>>(response,HttpStatus.BAD_REQUEST);
+		}
 		
 		try {
 			clienteNew = clienteService.save(cliente);
