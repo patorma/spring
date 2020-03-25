@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -78,15 +79,17 @@ public class ClienteRestController {
 		if(result.hasErrors()) {
 			// se debe obtener los mensajes de errror de cada campo 
 			// y convertir estos en una lista de errores de tipo string
-			List<String> errors = new ArrayList<>();
 			
-			// la idea es iterar con un for a traves de esta coleccion de mesnajes (o lista)
-			for(FieldError err: result.getFieldErrors()) {
-				errors.add("El campo '"+ err.getField() + "' "+err.getDefaultMessage());
-			}
+			// se debe convertir esta lista de fielderrors en String
+			List<String> errors = result.getFieldErrors()
+					.stream()
+					.map(err -> "El campo '"+ err.getField() + "' "+err.getDefaultMessage())// muy parecido  al operador map en angular (rxjs), mismo concepto!
+					.collect(Collectors.toList());// ahora podemos convertir de regreso el stream  aun tipo List
 			response.put("errors", errors);
 			// se responde con un responseentity con listados de error
 			return new ResponseEntity<Map<String, Object>>(response,HttpStatus.BAD_REQUEST);
+			
+			// en lo anterior se recibe un field errors y lo convertimos a string
 		}
 		
 		try {
@@ -103,7 +106,7 @@ public class ClienteRestController {
 	}
 
 	@PutMapping("/clientes/{id}")
-	public ResponseEntity<?> update(@RequestBody Cliente cliente,@PathVariable Long id) {
+	public ResponseEntity<?> update(@Valid @RequestBody Cliente cliente,BindingResult result,@PathVariable Long id) {
 		//obtenemos el cliente de la bd por Id
 		Cliente clienteActual = clienteService.findById(id);
 		
@@ -111,6 +114,22 @@ public class ClienteRestController {
 		Cliente clienteUpdated = null;
 		
 		Map<String, Object> response = new HashMap<>();
+		
+		if(result.hasErrors()) {
+			// se debe obtener los mensajes de errror de cada campo 
+			// y convertir estos en una lista de errores de tipo string
+			
+			// se debe convertir esta lista de fielderrors en String
+			List<String> errors = result.getFieldErrors()
+					.stream()
+					.map(err -> "El campo '"+ err.getField() + "' "+err.getDefaultMessage())// muy parecido  al operador map en angular (rxjs), mismo concepto!
+					.collect(Collectors.toList());// ahora podemos convertir de regreso el stream  aun tipo List
+			response.put("errors", errors);
+			// se responde con un responseentity con listados de error
+			return new ResponseEntity<Map<String, Object>>(response,HttpStatus.BAD_REQUEST);
+			
+			// en lo anterior se recibe un field errors y lo convertimos a string
+		}
 		
 		if(clienteActual == null) {
 			response.put("mensaje", "Error: no se pudo editar, el cliente ID: ".concat(id.toString().concat(" no existe en la base de datos!")));
