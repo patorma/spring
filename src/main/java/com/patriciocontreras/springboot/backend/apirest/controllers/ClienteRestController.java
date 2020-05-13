@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -190,7 +191,7 @@ public class ClienteRestController {
 		
 	}
 	// se obtiene del objeto request spring lo inyecta automaticamente a un atributo request
-	@PostMapping("/ckientes/upload")
+	@PostMapping("/clientes/upload")
 	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id ){
 		Map<String, Object> response = new HashMap<>();
 		// se captura el cliente por su id
@@ -200,23 +201,25 @@ public class ClienteRestController {
 		if(!archivo.isEmpty()) {
 			// se obtiene el nombre original del archivo
 			// que viene en la peticion
-			String nombreArchivo = archivo.getOriginalFilename();
+			// se agrega un identificador random unico (generado con UUID)
+			// si el archivo viene con espacios en blancos lo remplaze con nada replace()
+			String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename().replace(" ", "");
 			// se selecciona una ruta del equipo
 			Path rutaArchivo = Paths.get("uploads").resolve(nombreArchivo).toAbsolutePath();
 			
 			try {
 				Files.copy(archivo.getInputStream(), rutaArchivo);
 			} catch (IOException e) {
-				response.put("mensaje", "Error al subir la imagen del cleinte " + nombreArchivo);
+				response.put("mensaje", "Error al subir la imagen del cliente " + nombreArchivo);
 				response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
 				return new ResponseEntity<Map<String, Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 			cliente.setFoto(nombreArchivo);
 			// actualizar el cliente
 			clienteService.save(cliente);
-			// se pasara el mensaje en la respuesta del cliente actualizado con u foto
+			// se pasara el mensaje en la respuesta del cliente actualizado con una foto
 			response.put("cliente",cliente);
-			response.put("mensaje", "Has subido correctamente la iamgen: " + nombreArchivo);
+			response.put("mensaje", "Has subido correctamente la imagen: " + nombreArchivo);
 			
 			
 		}
