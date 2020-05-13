@@ -1,5 +1,9 @@
 package com.patriciocontreras.springboot.backend.apirest.controllers;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +29,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.patriciocontreras.springboot.backend.apirest.models.entity.Cliente;
 import com.patriciocontreras.springboot.backend.apirest.models.services.IClienteService;
@@ -183,6 +189,40 @@ public class ClienteRestController {
 		return new ResponseEntity<Map<String, Object>>(response,HttpStatus.OK);
 		
 	}
+	// se obtiene del objeto request spring lo inyecta automaticamente a un atributo request
+	@PostMapping("/ckientes/upload")
+	public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id ){
+		Map<String, Object> response = new HashMap<>();
+		// se captura el cliente por su id
+		Cliente cliente = clienteService.findById(id);
+		// ahora hay que subir el archivo, obtener el nombre del archivo y se lo asignamos al cliente
+		// se comprueba si existe la imagen que viene el atributo archivo
+		if(!archivo.isEmpty()) {
+			// se obtiene el nombre original del archivo
+			// que viene en la peticion
+			String nombreArchivo = archivo.getOriginalFilename();
+			// se selecciona una ruta del equipo
+			Path rutaArchivo = Paths.get("uploads").resolve(nombreArchivo).toAbsolutePath();
+			
+			try {
+				Files.copy(archivo.getInputStream(), rutaArchivo);
+			} catch (IOException e) {
+				response.put("mensaje", "Error al subir la imagen del cleinte " + nombreArchivo);
+				response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
+				return new ResponseEntity<Map<String, Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			cliente.setFoto(nombreArchivo);
+			// actualizar el cliente
+			clienteService.save(cliente);
+			// se pasara el mensaje en la respuesta del cliente actualizado con u foto
+			response.put("cliente",cliente);
+			response.put("mensaje", "Has subido correctamente la iamgen: " + nombreArchivo);
+			
+			
+		}
+		
+		return new ResponseEntity<Map<String, Object>>(response,HttpStatus.CREATED) ;
+	}
 	
-
+        
 }

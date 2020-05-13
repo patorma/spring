@@ -51,6 +51,8 @@ public class Cliente implements Serializable {
 	@Temporal(TemporalType.DATE)
 	private Date createAt;
 	
+	private String foto;
+	
 	//antes de persistir vamos a hacer la fecha automatica
 	/*@PrePersist
 	public void prePersist() {
