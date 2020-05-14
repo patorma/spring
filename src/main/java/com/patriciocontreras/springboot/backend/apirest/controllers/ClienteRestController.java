@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -52,6 +54,8 @@ public class ClienteRestController {
 
 	@Autowired
 	private IClienteService clienteService;
+	
+	private final Logger log = LoggerFactory.getLogger(ClienteRestController.class);
 
 	@GetMapping("/clientes")
 	public List<Cliente> index() {
@@ -226,6 +230,7 @@ public class ClienteRestController {
 			String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename().replace(" ", "");
 			// se selecciona una ruta del equipo
 			Path rutaArchivo = Paths.get("uploads").resolve(nombreArchivo).toAbsolutePath();
+			log.info(rutaArchivo.toString());
 			
 			try {
 				Files.copy(archivo.getInputStream(), rutaArchivo);
@@ -269,6 +274,7 @@ public class ClienteRestController {
 	public ResponseEntity<Resource> verFoto(@PathVariable String nombreFoto){
 		
 		Path rutaArchivo = Paths.get("uploads").resolve(nombreFoto).toAbsolutePath();
+		log.info(rutaArchivo.toString());
 		// creamos el recurso
 		Resource recurso = null;
 		//se crea la instancia de UrlResource se pasa en el constructor la ruta de archivo convertida 
