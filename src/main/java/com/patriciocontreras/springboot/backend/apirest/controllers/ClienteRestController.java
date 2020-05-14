@@ -1,5 +1,6 @@
 package com.patriciocontreras.springboot.backend.apirest.controllers;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -176,6 +177,21 @@ public class ClienteRestController {
 		//Map para guardar el contenido que enviaremos en el ResponseEntity con mensajes
 		Map<String, Object> response = new HashMap<>();
 		try {
+			// con esto antes de eliminar el cliente se revisa que  si tieene una foto asociada
+			// y ducha foto se elimina
+			Cliente cliente = clienteService.findById(id);
+			String nombreFotoAnterior = cliente.getFoto();
+			
+			if(nombreFotoAnterior != null &&  nombreFotoAnterior.length() >0) {
+				// contiene la ruta completa y tambien el nombre de la imagen
+				Path rutaFotoAnterior = Paths.get("uploads").resolve(nombreFotoAnterior).toAbsolutePath();
+				// se convierte el path a archivo, con toFile() se convierte en archivo
+				File archivoFotoAnterior = rutaFotoAnterior.toFile();
+				// se valida que este archivo exista , se pueda leer y se elimina
+				if(archivoFotoAnterior.exists() && archivoFotoAnterior.canRead()) {
+					archivoFotoAnterior.delete();
+				}
+			}
 			
 			//Automaticamente se valida que el id del cliente existe en la BD
 			clienteService.delete(id);
@@ -214,6 +230,21 @@ public class ClienteRestController {
 				response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
 				return new ResponseEntity<Map<String, Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
 			}
+			
+			// se pregunta si el cliente tiene una foto existente y si existe esa foto en el path
+			String nombreFotoAnterior = cliente.getFoto();
+			
+			if(nombreFotoAnterior != null &&  nombreFotoAnterior.length() >0) {
+				// contiene la ruta completa y tambien el nombre de la imagen
+				Path rutaFotoAnterior = Paths.get("uploads").resolve(nombreFotoAnterior).toAbsolutePath();
+				// se convierte el path a archivo, con toFile() se convierte en archivo
+				File archivoFotoAnterior = rutaFotoAnterior.toFile();
+				// se valida que este archivo exista , se pueda leer y se elimina
+				if(archivoFotoAnterior.exists() && archivoFotoAnterior.canRead()) {
+					archivoFotoAnterior.delete();
+				}
+			}
+			
 			cliente.setFoto(nombreArchivo);
 			// actualizar el cliente
 			clienteService.save(cliente);
