@@ -183,7 +183,7 @@ public class ClienteRestController {
 		Map<String, Object> response = new HashMap<>();
 		try {
 			// con esto antes de eliminar el cliente se revisa que  si tieene una foto asociada
-			// y ducha foto se elimina
+			// y dicha foto se elimina
 			Cliente cliente = clienteService.findById(id);
 			String nombreFotoAnterior = cliente.getFoto();
 			
