@@ -283,7 +283,14 @@ public class ClienteRestController {
 		}
 		// se valida que el recurso exista y sea validó o leible
 		if(!recurso.exists() && !recurso.isReadable()) {
-			throw new RuntimeException("Error no se pudo cargar la imagen: " + nombreFoto);
+			rutaArchivo = Paths.get("src/main/resources/static/images").resolve("no-usuario.png").toAbsolutePath();
+			// ahora se carga el recurso
+			try {
+				recurso = new UrlResource(rutaArchivo.toUri());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
+			log.error("Error no se pudo cargar la imagen: " + nombreFoto);
 		}
 		//agregamos en la cabecera la foto para hacerla descargarla
 		HttpHeaders cabecera = new HttpHeaders();
