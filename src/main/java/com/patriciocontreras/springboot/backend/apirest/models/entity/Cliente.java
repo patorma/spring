@@ -64,6 +64,7 @@ public class Cliente implements Serializable {
 	// es carga peresoza (lazy)
 	// se ignora "hibernateLazyInitializer","hadler " ya que son propios de hibernate
 	// del objeto proxy que esta relacionado al objeto region
+	@NotNull(message = "la región puede ser vacia")
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name="region_id")
 	@JsonIgnoreProperties({"hibernateLazyInitializer","hadler"})
