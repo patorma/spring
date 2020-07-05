@@ -1,24 +1,18 @@
 package com.patriciocontreras.springboot.backend.apirest.controllers;
 
-import java.io.File;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +35,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.patriciocontreras.springboot.backend.apirest.models.entity.Cliente;
 import com.patriciocontreras.springboot.backend.apirest.models.services.IClienteService;
+import com.patriciocontreras.springboot.backend.apirest.models.services.UploadFileServiceImpl;
 
 
 
@@ -52,7 +47,8 @@ public class ClienteRestController {
 	@Autowired
 	private IClienteService clienteService;
 	
-	private final Logger log = LoggerFactory.getLogger(ClienteRestController.class);
+	@Autowired
+	private UploadFileServiceImpl uploadService;
 
 	@GetMapping("/clientes")
 	public List<Cliente> index() {
@@ -187,16 +183,8 @@ public class ClienteRestController {
 			Cliente cliente = clienteService.findById(id);
 			String nombreFotoAnterior = cliente.getFoto();
 			
-			if(nombreFotoAnterior != null &&  nombreFotoAnterior.length() >0) {
-				// contiene la ruta completa y tambien el nombre de la imagen
-				Path rutaFotoAnterior = Paths.get("uploads").resolve(nombreFotoAnterior).toAbsolutePath();
-				// se convierte el path a archivo, con toFile() se convierte en archivo
-				File archivoFotoAnterior = rutaFotoAnterior.toFile();
-				// se valida que este archivo exista , se pueda leer y se elimina
-				if(archivoFotoAnterior.exists() && archivoFotoAnterior.canRead()) {
-					archivoFotoAnterior.delete();
-				}
-			}
+			//uploadService para borrar la foto
+			uploadService.eliminar(nombreFotoAnterior);
 			
 			//Automaticamente se valida que el id del cliente existe en la BD
 			clienteService.delete(id);
@@ -220,19 +208,12 @@ public class ClienteRestController {
 		// ahora hay que subir el archivo, obtener el nombre del archivo y se lo asignamos al cliente
 		// se comprueba si existe la imagen que viene el atributo archivo
 		if(!archivo.isEmpty()) {
-			// se obtiene el nombre original del archivo
-			// que viene en la peticion
-			// se agrega un identificador random unico (generado con UUID)
-			// si el archivo viene con espacios en blancos lo remplaze con nada replace()
-			String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename().replace(" ", "");
-			// se selecciona una ruta del equipo
-			Path rutaArchivo = Paths.get("uploads").resolve(nombreArchivo).toAbsolutePath();
-			log.info(rutaArchivo.toString());
 			
+			String nombreArchivo = null;
 			try {
-				Files.copy(archivo.getInputStream(), rutaArchivo);
+				nombreArchivo = uploadService.copiar(archivo);
 			} catch (IOException e) {
-				response.put("mensaje", "Error al subir la imagen del cliente " + nombreArchivo);
+				response.put("mensaje", "Error al subir la imagen del cliente ");
 				response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
 				return new ResponseEntity<Map<String, Object>>(response,HttpStatus.INTERNAL_SERVER_ERROR);
 			}
@@ -240,17 +221,9 @@ public class ClienteRestController {
 			// se pregunta si el cliente tiene una foto existente y si existe esa foto en el path
 			String nombreFotoAnterior = cliente.getFoto();
 			
-			if(nombreFotoAnterior != null &&  nombreFotoAnterior.length() >0) {
-				// contiene la ruta completa y tambien el nombre de la imagen
-				Path rutaFotoAnterior = Paths.get("uploads").resolve(nombreFotoAnterior).toAbsolutePath();
-				// se convierte el path a archivo, con toFile() se convierte en archivo
-				File archivoFotoAnterior = rutaFotoAnterior.toFile();
-				// se valida que este archivo exista , se pueda leer y se elimina
-				if(archivoFotoAnterior.exists() && archivoFotoAnterior.canRead()) {
-					archivoFotoAnterior.delete();
-				}
-			}
-			
+			//uploadService para borrar la foto
+			uploadService.eliminar(nombreFotoAnterior);
+		
 			cliente.setFoto(nombreArchivo);
 			// actualizar el cliente
 			clienteService.save(cliente);
@@ -270,27 +243,12 @@ public class ClienteRestController {
 	@GetMapping("/uploads/img/{nombreFoto:.+}")
 	public ResponseEntity<Resource> verFoto(@PathVariable String nombreFoto){
 		
-		Path rutaArchivo = Paths.get("uploads").resolve(nombreFoto).toAbsolutePath();
-		log.info(rutaArchivo.toString());
-		// creamos el recurso
 		Resource recurso = null;
-		//se crea la instancia de UrlResource se pasa en el constructor la ruta de archivo convertida 
-		// en una uri
+		
 		try {
-			recurso = new UrlResource(rutaArchivo.toUri());
+			recurso = uploadService.cargar(nombreFoto);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
-		}
-		// se valida que el recurso exista y sea validó o leible
-		if(!recurso.exists() && !recurso.isReadable()) {
-			rutaArchivo = Paths.get("src/main/resources/static/images").resolve("no-usuario.png").toAbsolutePath();
-			// ahora se carga el recurso
-			try {
-				recurso = new UrlResource(rutaArchivo.toUri());
-			} catch (MalformedURLException e) {
-				e.printStackTrace();
-			}
-			log.error("Error no se pudo cargar la imagen: " + nombreFoto);
 		}
 		//agregamos en la cabecera la foto para hacerla descargarla
 		HttpHeaders cabecera = new HttpHeaders();
