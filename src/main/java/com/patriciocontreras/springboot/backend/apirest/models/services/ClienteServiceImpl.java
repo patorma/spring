@@ -13,7 +13,7 @@ import com.patriciocontreras.springboot.backend.apirest.models.entity.Cliente;
 import com.patriciocontreras.springboot.backend.apirest.models.entity.Region;
 
 @Service
-public class ClienrteServiceImpl implements IClienteService {
+public class ClienteServiceImpl implements IClienteService {
 
 	//se hace inyeccion de dependencias con @AutoWired
 	//se inyecta el cliente DAO
