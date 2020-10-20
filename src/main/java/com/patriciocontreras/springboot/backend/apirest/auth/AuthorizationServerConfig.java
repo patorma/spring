@@ -5,15 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.AccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
@@ -47,14 +44,35 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	
 	@Override
 	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-		
-		super.configure(security);
+		// con security damos el acceso a los endpoint
+		//se le da permiso a cualquier usuario, como usuario anonimo
+		// de poder autenticarse en el Endpoint de login: /oauth/token/
+		//generar el token cuando se autentica
+		//Endpoint que verfica el token y su firma /oauth/check_token
+		// estos endpoint estan protegidos por header authorization basic: Client Id + Client secret
+		security.tokenKeyAccess("permitAll()")
+		.checkTokenAccess("isAuthenticated()");
 	}
+	
+	// En esta caso se va a registrar nuestra aplicacion cliente angular, si fueran mas 
+	// se haria para cada uno con su id 
 
 	@Override
 	public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 		
-		super.configure(clients);
+		// vamos a crear un cliente con withClient
+		//authorizedGrantTypes
+		//asignar el tipo de concesion de nuestra aplicacion , osea como obtenemos el token
+		//se obtiene un token de acceso renovado con refresh_token o token de actualizcion
+		// se obtiene este token nuevo antes que expire el tiempo del token 
+		// refresh token evitamos tener que a cada rato iniciar sesion al momento de solicitar
+		//recursos
+		clients.inMemory().withClient("angularapp")
+		.secret(passwordEncoder.encode("12345"))
+		.scopes("read","write") // le damos permiso de escritura y lectura CRUD
+		.authorizedGrantTypes("password","refresh_token")
+		.accessTokenValiditySeconds(3600) // tiempo de caducidad del token
+		.refreshTokenValiditySeconds(3600); // tiemnpo de caducidad refresh token
 	}
 
 	// Este se encarga del proceso de autenticacion y de validar el token
