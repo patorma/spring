@@ -5,7 +5,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -57,6 +59,24 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter{
 		return super.authenticationManager();
 	}
 	
+	// Aqui se tienen reglas de acceso de usuarios por el el lado de spring 
+	// en este lado debemos deshabilitar ciertas protecciones como
+	// CSRF: Cross-site request forgery o falsificacion de peticion de sitios cruzados
+	//Esta es para evitar cualquierb ataque es para proteger nuestro formulario atraves de
+	//un token 
+	// como trabajamos en el frontend con angular no la necesitamos en spring
+	@Override
+	public void configure(HttpSecurity http) throws Exception {
+		//vamos a dar acceso al listado clientes(sin autorizacion)
+		// ademas lo vamos a dejar sin estado (statelesss)
+		//ya que vamos a trabajar con token
+		http.authorizeRequests()
+		.anyRequest().authenticated()
+		.and()
+		.csrf().disable()
+		.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS); 
+	
+	}
 	
 	
 
