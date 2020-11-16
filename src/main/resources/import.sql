@@ -30,3 +30,14 @@ INSERT INTO clientes(region_id,nombre,apellido,email,create_at) VALUES(2,'Leslie
 INSERT INTO clientes(region_id,nombre,apellido,email,create_at) VALUES(2,'Patricio','Suarez','hombre_audaz@yahoo.com', '2019-12-30');
 INSERT INTO clientes(region_id,nombre,apellido,email,create_at) VALUES(5,'Lorena', 'Suarez',  'lore@gmail.com', '2019-11-24');
 INSERT INTO clientes(region_id,nombre,apellido,email,create_at) VALUES(6,'Felicia','Palma', 'feliz@gmail.com','2019-09-15');
+
+/*Creamos algunos usuarios con roles*/
+INSERT INTO usuarios (username,password,enabled) VALUES ('andres','$2a$10$ApgjGPuyD93ebTJ9gVDlV.bLG96fV4mwrNESQVCiusts935bezhHG', 1);
+INSERT INTO usuarios (username,password,enabled) VALUES ('admin','$2a$10$y//tMuLCW4tuTSc8tR4IheHAAbLqjqy8coxw0FcFN1LahsiBstcb6', 1);
+
+INSERT INTO roles (nombre) VALUES ('ROLE_USER');
+INSERT INTO roles (nombre) VALUES ('ROLE_ADMIN');
+
+INSERT INTO usuarios_roles (usuario_id,role_id) VALUES (1,1);
+INSERT INTO usuarios_roles (usuario_id,role_id) VALUES (2,2);
+INSERT INTO usuarios_roles (usuario_id,role_id) VALUES (2,1);
