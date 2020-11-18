@@ -1,5 +1,7 @@
 package com.patriciocontreras.springboot.backend.apirest.auth;
 
+import java.util.Arrays;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +13,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
@@ -38,6 +41,11 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	@Autowired
 	@Qualifier("authenticationManager")
 	private AuthenticationManager authenticationManager;
+	
+	// Inyectamos InfoAdicionalToken
+	
+	@Autowired
+	private InfoAdicionalToken infoAdicionalToken;
 	
 	// Ahora se debe implementar tres metodos de configuracion
 	// Para eso se sobreescribi metodos de la clase AuthorizationServerConfigurerAdapter
@@ -83,11 +91,14 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	// y esto se realiza en rutas o endpoints 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+		TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+		tokenEnhancerChain.setTokenEnhancers(Arrays.asList(infoAdicionalToken,accessTokenConverter()));
 	
 		// primero se registra el authenticationManager
 		endpoints.authenticationManager(authenticationManager)
 		.tokenStore(tokenStore()) // se encarga de crear un token, se podria omitir
-		.accessTokenConverter(accessTokenConverter());// tiene que ver con la persistencia del token 
+		.accessTokenConverter(accessTokenConverter())// tiene que ver con la persistencia del token 
+		.tokenEnhancer(tokenEnhancerChain);
 	}
 
 	@Bean

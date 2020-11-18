@@ -18,8 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.patriciocontreras.springboot.backend.apirest.models.dao.IUsuarioDao;
 import com.patriciocontreras.springboot.backend.apirest.models.entity.Usuario;
 
+//IUsuarioService es una interface personalizada y  UserDetailsService es de spring
 @Service
-public class UsuarioService implements UserDetailsService{
+public class UsuarioService implements IUsuarioService,UserDetailsService{
 	//Manejar errores
 	// como parametro se pasa el nombre de la clase
 	private Logger logger = LoggerFactory.getLogger(UsuarioService.class); 
@@ -55,6 +56,12 @@ public class UsuarioService implements UserDetailsService{
 				.collect(Collectors.toList());
 		
 		return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnabled(), true, true, true, authorities);
+	}
+
+	@Override
+	public Usuario findByUsername(String username) {
+		
+		return usuarioDao.findByUsername(username);
 	}
 
 }
