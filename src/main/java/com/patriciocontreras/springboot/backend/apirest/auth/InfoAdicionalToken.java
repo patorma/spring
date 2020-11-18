@@ -29,7 +29,10 @@ public class InfoAdicionalToken implements TokenEnhancer {
 		//se guarda Object porque el dato es generico
 		Map<String, Object> info = new HashMap<>();
 		info.put("info_adicional","Hola que tal!" + ": "+ usuario.getUsername());
-		info.put("nombre_usuario", usuario.getId() + ": "+ usuario.getUsername());
+		
+		info.put("nombre", usuario.getNombre());
+		info.put("apellido", usuario.getApellido());
+		info.put("email", usuario.getEmail());
 		
 		
 		// se debe asignar info a accessToken

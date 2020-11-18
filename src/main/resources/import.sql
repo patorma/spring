@@ -32,8 +32,8 @@ INSERT INTO clientes(region_id,nombre,apellido,email,create_at) VALUES(5,'Lorena
 INSERT INTO clientes(region_id,nombre,apellido,email,create_at) VALUES(6,'Felicia','Palma', 'feliz@gmail.com','2019-09-15');
 
 /*Creamos algunos usuarios con roles*/
-INSERT INTO usuarios (username,password,enabled) VALUES ('andres','$2a$10$ApgjGPuyD93ebTJ9gVDlV.bLG96fV4mwrNESQVCiusts935bezhHG', 1);
-INSERT INTO usuarios (username,password,enabled) VALUES ('admin','$2a$10$y//tMuLCW4tuTSc8tR4IheHAAbLqjqy8coxw0FcFN1LahsiBstcb6', 1);
+INSERT INTO usuarios (username,password,enabled,nombre,apellido,email) VALUES ('andres','$2a$10$ApgjGPuyD93ebTJ9gVDlV.bLG96fV4mwrNESQVCiusts935bezhHG', 1,'Andres','Guzman','profesor@bolsasdeideas.com');
+INSERT INTO usuarios (username,password,enabled,nombre,apellido,email) VALUES ('admin','$2a$10$y//tMuLCW4tuTSc8tR4IheHAAbLqjqy8coxw0FcFN1LahsiBstcb6', 1, 'Jhon','Doe','jhon.doe@bolsasdeideas.com');
 
 INSERT INTO roles (nombre) VALUES ('ROLE_USER');
 INSERT INTO roles (nombre) VALUES ('ROLE_ADMIN');
